@@ -2,8 +2,12 @@
 /// <reference path="DefinitelyTyped\linq\linq.d.ts" />
 
 function init() {
-	testGraphics();
-	testTimer();
+	var universe = new Universe(CANVAS_WIDTH,CANVAS_HEIGHT,"demoCanvas");
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
 }
 
 function testLinq(): Bounds {
@@ -43,6 +47,10 @@ interface TimeListeners {
 	stepForward(sequence: number);
 }
 
+interface SelfRendering {
+	render();
+}
+
 class Bounds {
 	constructor(public width: number, public height: number) { }
 }
@@ -51,11 +59,26 @@ class Loc {
 	constructor(public x: number, public y: number) { }
 }
 
-class Block {
+class Block implements SelfRendering {
 	constructor(public location: Loc) { }
+	render () {
+		console.log("Drawing Block at " + this.location.x + " " + this.location.y);
+		if (Universe.readyForRender()) {
+			var rectangle = new createjs.Shape();
+			rectangle.graphics.beginFill("DeepSkyBlue").drawRect(this.location.x - Block.getHalfBlockSize(), this.location.y - Block.getHalfBlockSize(), Block.getHalfBlockSize() * 2, Block.getHalfBlockSize() * 2);
+			rectangle.x = this.location.x - Block.getHalfBlockSize();
+			rectangle.y = this.location.y - Block.getHalfBlockSize();
+			Universe.renderingLayer.addChild(rectangle);
+			Universe.renderingLayer.update();
+		}
+	}
+
+	static getHalfBlockSize() {
+		return 5;
+	}
 }
 
-class Entity implements TimeListeners {
+class Entity implements TimeListeners, SelfRendering {
 	alive: boolean;
 	age: number;
 
@@ -98,9 +121,19 @@ class Entity implements TimeListeners {
 	stepForward(sequence: number) {
 		this.age++;
 
-		if (this.getLifeExpectancy() - this.age < 0 )
-		{
+		if (this.getLifeExpectancy() - this.age < 0 ) {
 			this.alive = false;
+			return;
+		}
+		else {
+			this.location = new Loc(Math.floor(Math.random() * 500), Math.floor(Math.random() * 200));
+			this.render();
+		}
+	}
+
+	render () {
+		if (Universe.readyForRender()) {
+			Enumerable.From(this.blocks).ForEach("$.render()");
 		}
 	}
 
@@ -122,6 +155,42 @@ class Entity implements TimeListeners {
 		Enumerable.From(comparison.unique).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
 
 		return newEntity;
+	}
+}
+
+class Universe {
+	static entities: Entity[];
+	static renderingLayer: createjs.Stage;
+	static timer: TimeKeeper;
+
+	constructor(public canvasWidth: number, public canvasHeight: number, canvasElementName: string) {
+		var stage = new createjs.Stage(canvasElementName);
+		Universe.timer = new TimeKeeper();
+		Universe.updateRenderingLayer(stage);
+		Universe.entities = [];
+	}
+
+	static updateRenderingLayer(renderingLayer: createjs.Stage) {
+		this.renderingLayer = renderingLayer;
+	}
+
+	static clearRenderingLayer() {
+		this.renderingLayer.clear();
+	}
+
+	static readyForRender() : Boolean {
+		if (typeof this.renderingLayer !== 'undefined') {
+			return true;
+		}
+		else {
+			return false;
+		}
+
+	}
+
+	static AddEntity(entity: Entity) {
+		Universe.entities.push(entity);
+		Universe.timer.listeners.push(entity);
 	}
 }
 

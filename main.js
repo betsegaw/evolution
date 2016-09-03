@@ -1,8 +1,12 @@
 /// <reference path="DefinitelyTyped\createjs\createjs.d.ts" />
 /// <reference path="DefinitelyTyped\linq\linq.d.ts" />
 function init() {
-    testGraphics();
-    testTimer();
+    var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
+    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
 }
 function testLinq() {
     var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
@@ -43,6 +47,20 @@ var Block = (function () {
     function Block(location) {
         this.location = location;
     }
+    Block.prototype.render = function () {
+        console.log("Drawing Block at " + this.location.x + " " + this.location.y);
+        if (Universe.readyForRender()) {
+            var rectangle = new createjs.Shape();
+            rectangle.graphics.beginFill("DeepSkyBlue").drawRect(this.location.x - Block.getHalfBlockSize(), this.location.y - Block.getHalfBlockSize(), Block.getHalfBlockSize() * 2, Block.getHalfBlockSize() * 2);
+            rectangle.x = this.location.x - Block.getHalfBlockSize();
+            rectangle.y = this.location.y - Block.getHalfBlockSize();
+            Universe.renderingLayer.addChild(rectangle);
+            Universe.renderingLayer.update();
+        }
+    };
+    Block.getHalfBlockSize = function () {
+        return 5;
+    };
     return Block;
 }());
 var Entity = (function () {
@@ -78,6 +96,16 @@ var Entity = (function () {
         this.age++;
         if (this.getLifeExpectancy() - this.age < 0) {
             this.alive = false;
+            return;
+        }
+        else {
+            this.location = new Loc(Math.floor(Math.random() * 500), Math.floor(Math.random() * 200));
+            this.render();
+        }
+    };
+    Entity.prototype.render = function () {
+        if (Universe.readyForRender()) {
+            Enumerable.From(this.blocks).ForEach("$.render()");
         }
     };
     Entity.getEntityComparison = function (entity1, entity2) {
@@ -95,6 +123,35 @@ var Entity = (function () {
         return newEntity;
     };
     return Entity;
+}());
+var Universe = (function () {
+    function Universe(canvasWidth, canvasHeight, canvasElementName) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        var stage = new createjs.Stage(canvasElementName);
+        Universe.timer = new TimeKeeper();
+        Universe.updateRenderingLayer(stage);
+        Universe.entities = [];
+    }
+    Universe.updateRenderingLayer = function (renderingLayer) {
+        this.renderingLayer = renderingLayer;
+    };
+    Universe.clearRenderingLayer = function () {
+        this.renderingLayer.clear();
+    };
+    Universe.readyForRender = function () {
+        if (typeof this.renderingLayer !== 'undefined') {
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+    Universe.AddEntity = function (entity) {
+        Universe.entities.push(entity);
+        Universe.timer.listeners.push(entity);
+    };
+    return Universe;
 }());
 var TimeKeeper = (function () {
     function TimeKeeper() {
