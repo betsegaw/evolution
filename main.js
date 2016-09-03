@@ -2,6 +2,7 @@
 /// <reference path="DefinitelyTyped\linq\linq.d.ts" />
 function init() {
     testGraphics();
+    testTimer();
 }
 function testLinq() {
     var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
@@ -15,6 +16,13 @@ function testGraphics() {
     rectangle.y = 100;
     stage.addChild(rectangle);
     stage.update();
+}
+var t;
+var entity;
+function testTimer() {
+    t = new TimeKeeper();
+    entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
+    t.listeners.push(entity);
 }
 var BLOCK_SIZE = 10;
 var CANVAS_WIDTH = 1000;
@@ -47,6 +55,9 @@ var Entity = (function () {
     Entity.prototype.addBlock = function (block) {
         this.blocks.push(block);
     };
+    Entity.prototype.getLifeExpectancy = function () {
+        return 15 - this.blocks.length;
+    };
     Entity.prototype.recenter = function () {
         var bounds = this.getBounds();
         var midX = bounds.width / 2;
@@ -63,6 +74,9 @@ var Entity = (function () {
         var height = Enumerable.From(this.blocks).Max("$.location.y") - Enumerable.From(this.blocks).Min("$.location.y");
         return new Bounds(width, height);
     };
+    Entity.prototype.stepForward = function (sequence) {
+        console.log("Got called for " + sequence);
+    };
     Entity.getEntityComparison = function (entity1, entity2) {
         entity1.recenter();
         entity2.recenter();
@@ -78,4 +92,17 @@ var Entity = (function () {
         return newEntity;
     };
     return Entity;
+}());
+var TimeKeeper = (function () {
+    function TimeKeeper() {
+        var _this = this;
+        this.myCallback = function () {
+            Enumerable.From(_this.listeners).ForEach(function (x) { x.stepForward(_this.counter); });
+            _this.counter++;
+        };
+        this.listeners = [];
+        this.counter = 0;
+        this.intervalID = window.setInterval(this.myCallback, 1000);
+    }
+    return TimeKeeper;
 }());

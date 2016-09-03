@@ -3,6 +3,7 @@
 
 function init() {
 	testGraphics();
+	testTimer();
 }
 
 function testLinq(): Bounds {
@@ -21,6 +22,18 @@ function testGraphics() {
 	stage.update();
 }
 
+var t ;
+
+var entity;
+
+function testTimer() {
+	t = new TimeKeeper();
+
+	entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
+
+	t.listeners.push(entity);
+}
+
 const BLOCK_SIZE = 10;
 const CANVAS_WIDTH = 1000;
 const CANVAS_HEIGHT = 1000;
@@ -28,6 +41,10 @@ const CANVAS_HEIGHT = 1000;
 interface ComparisonResult {
 	intersection: Block[];
 	unique: Block[]
+}
+
+interface TimeListeners {
+	stepForward(sequence: number);
 }
 
 class Bounds {
@@ -42,11 +59,15 @@ class Block {
 	constructor(public location: Loc) { }
 }
 
-class Entity {
+class Entity implements TimeListeners {
 	constructor(public blocks: Block[], public location: Loc) { }
 
 	addBlock(block: Block) {
 		this.blocks.push(block);
+	}
+
+	getLifeExpectancy(): number {
+		return 15 - this.blocks.length;
 	}
 
 	recenter() {
@@ -72,6 +93,10 @@ class Entity {
 		return new Bounds(width, height);
 	}
 
+	stepForward(sequence: number) {
+		console.log("Got called for " + sequence);
+	}
+
 	static getEntityComparison(entity1: Entity, entity2: Entity): ComparisonResult {
 		entity1.recenter();
 		entity2.recenter();
@@ -82,13 +107,30 @@ class Entity {
 		return { intersection: intersection, unique: unique };
 	}
 
-	static mate(entity1: Entity, entity2: Entity) : Entity {
-		var comparison = Entity.getEntityComparison(entity1,entity2);
+	static mate(entity1: Entity, entity2: Entity): Entity {
+		var comparison = Entity.getEntityComparison(entity1, entity2);
 
 		var newEntity = new Entity(comparison.intersection, new Loc(entity1.location.x, entity2.location.y));
 
-		Enumerable.From(comparison.unique).ForEach(function(x) { if (Math.floor(Math.random()*2) == 1) newEntity.addBlock(x)});
+		Enumerable.From(comparison.unique).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
 
 		return newEntity;
+	}
+}
+
+class TimeKeeper {
+	listeners: TimeListeners[];
+	intervalID: number;
+	counter: number;
+
+	constructor() {
+		this.listeners = [];
+		this.counter = 0;
+		this.intervalID = window.setInterval(this.myCallback, 1000);
+	}
+
+	myCallback = () => {
+		Enumerable.From(this.listeners).ForEach(function(x) { x.stepForward(_this.counter) });
+		this.counter++;
 	}
 }
