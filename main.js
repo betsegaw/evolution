@@ -136,7 +136,8 @@ var Universe = (function () {
         this.renderingLayer = renderingLayer;
     };
     Universe.clearRenderingLayer = function () {
-        this.renderingLayer.clear();
+        this.renderingLayer.removeAllChildren();
+        this.renderingLayer.update();
     };
     Universe.readyForRender = function () {
         if (typeof this.renderingLayer !== 'undefined') {
@@ -156,6 +157,9 @@ var TimeKeeper = (function () {
     function TimeKeeper() {
         var _this = this;
         this.myCallback = function () {
+            if (Universe.readyForRender()) {
+                Universe.clearRenderingLayer();
+            }
             Enumerable.From(_this.listeners).ForEach(function (x) { x.stepForward(_this.counter); });
             _this.counter++;
         };

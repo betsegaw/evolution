@@ -173,7 +173,8 @@ class Universe {
 	}
 
 	static clearRenderingLayer() {
-		this.renderingLayer.clear();
+		this.renderingLayer.removeAllChildren();
+		this.renderingLayer.update();
 	}
 
 	static readyForRender() : Boolean {
@@ -204,6 +205,9 @@ class TimeKeeper {
 	}
 
 	myCallback = () => {
+		if (Universe.readyForRender()) {
+			Universe.clearRenderingLayer();
+		}
 		Enumerable.From(this.listeners).ForEach(function(x) { x.stepForward(_this.counter) });
 		this.counter++;
 	}
