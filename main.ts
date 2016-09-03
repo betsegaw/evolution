@@ -22,14 +22,10 @@ function testGraphics() {
 	stage.update();
 }
 
-var t ;
-
-var entity;
-
 function testTimer() {
-	t = new TimeKeeper();
+	var t = new TimeKeeper();
 
-	entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
+	var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
 
 	t.listeners.push(entity);
 }
@@ -60,7 +56,13 @@ class Block {
 }
 
 class Entity implements TimeListeners {
-	constructor(public blocks: Block[], public location: Loc) { }
+	alive: boolean;
+	age: number;
+
+	constructor(public blocks: Block[], public location: Loc) { 
+		this.alive = true;
+		this.age = 0;
+	}
 
 	addBlock(block: Block) {
 		this.blocks.push(block);
@@ -94,7 +96,12 @@ class Entity implements TimeListeners {
 	}
 
 	stepForward(sequence: number) {
-		console.log("Got called for " + sequence);
+		this.age++;
+
+		if (this.getLifeExpectancy() - this.age < 0 )
+		{
+			this.alive = false;
+		}
 	}
 
 	static getEntityComparison(entity1: Entity, entity2: Entity): ComparisonResult {

@@ -17,11 +17,9 @@ function testGraphics() {
     stage.addChild(rectangle);
     stage.update();
 }
-var t;
-var entity;
 function testTimer() {
-    t = new TimeKeeper();
-    entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
+    var t = new TimeKeeper();
+    var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
     t.listeners.push(entity);
 }
 var BLOCK_SIZE = 10;
@@ -51,6 +49,8 @@ var Entity = (function () {
     function Entity(blocks, location) {
         this.blocks = blocks;
         this.location = location;
+        this.alive = true;
+        this.age = 0;
     }
     Entity.prototype.addBlock = function (block) {
         this.blocks.push(block);
@@ -75,7 +75,10 @@ var Entity = (function () {
         return new Bounds(width, height);
     };
     Entity.prototype.stepForward = function (sequence) {
-        console.log("Got called for " + sequence);
+        this.age++;
+        if (this.getLifeExpectancy() - this.age < 0) {
+            this.alive = false;
+        }
     };
     Entity.getEntityComparison = function (entity1, entity2) {
         entity1.recenter();
