@@ -5,8 +5,8 @@ function init() {
 	testGraphics();
 }
 
-function testLinq() : Bounds {
-	var entity = new Entity([new Block(new Loc(0,0)), new Block(new Loc(10,10)), new Block(new Loc(20,20)), new Block(new Loc(30,30))]);
+function testLinq(): Bounds {
+	var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
 	return entity.getBounds();
 }
 
@@ -21,31 +21,64 @@ function testGraphics() {
 	stage.update();
 }
 
-class Bounds {
-	constructor(public width: number, public height: number) {
+const BLOCK_SIZE = 10;
+const CANVAS_WIDTH = 1000;
+const CANVAS_HEIGHT = 1000;
 
-	}
+interface ComparisonResult {
+	intersection: Block[];
+	unique: Block[]
+}
+
+class Bounds {
+	constructor(public width: number, public height: number) { }
 }
 
 class Loc {
-	constructor (public x: number, public y: number){
-
-	}
+	constructor(public x: number, public y: number) { }
 }
 
 class Block {
-	constructor(public location: Loc) {
-	}
+	constructor(public location: Loc) { }
 }
 
 class Entity {
-	constructor(public block: Block[]) {
+	constructor(public blocks: Block[], public location: Loc) { }
+
+	addBlock(block: Block) {
+		this.blocks.push(block);
+	}
+
+	recenter() {
+		var bounds = this.getBounds();
+		var midX = bounds.width / 2;
+		var midY = bounds.height / 2;
+
+		var leftMostX = Enumerable.From(this.blocks).Min("$.location.x");
+		var topMostY = Enumerable.From(this.blocks).Min("$.location.y");
+
+		var newCenterOnOldCoordinate = new Loc(leftMostX + midX, topMostY + midY);
+
+		Enumerable.From(this.blocks).ForEach(function(a) { a.location.x += a.location.x - newCenterOnOldCoordinate.x; a.location.y += a.location.y - newCenterOnOldCoordinate.y; });
+
+		this.location.x += newCenterOnOldCoordinate.x;
+		this.location.y += newCenterOnOldCoordinate.y;
 	}
 
 	getBounds(): Bounds {
-		var width = Enumerable.From(this.block).Max("$.location.x") - Enumerable.From(this.block).Min("$.location.x");
-		var height = Enumerable.From(this.block).Max("$.location.y") - Enumerable.From(this.block).Min("$.location.y");
+		var width = Enumerable.From(this.blocks).Max("$.location.x") - Enumerable.From(this.blocks).Min("$.location.x");
+		var height = Enumerable.From(this.blocks).Max("$.location.y") - Enumerable.From(this.blocks).Min("$.location.y");
 
 		return new Bounds(width, height);
+	}
+
+	getEntityComparison(entity: Entity): ComparisonResult { 
+		this.recenter();
+		entity.recenter();
+
+		var intersection = Enumerable.From(this.blocks).Intersect(Enumerable.From(entity.blocks)).ToArray();
+		var unique =  Enumerable.From(this.blocks).Except(Enumerable.From(entity.blocks)).ToArray();
+
+		return { intersection: intersection, unique: unique};
 	}
 }
