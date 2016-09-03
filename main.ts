@@ -59,19 +59,8 @@ class Loc {
 	constructor(public x: number, public y: number) { }
 }
 
-class Block implements SelfRendering {
+class Block {
 	constructor(public location: Loc) { }
-	render () {
-		console.log("Drawing Block at " + this.location.x + " " + this.location.y);
-		if (Universe.readyForRender()) {
-			var rectangle = new createjs.Shape();
-			rectangle.graphics.beginFill("DeepSkyBlue").drawRect(this.location.x - Block.getHalfBlockSize(), this.location.y - Block.getHalfBlockSize(), Block.getHalfBlockSize() * 2, Block.getHalfBlockSize() * 2);
-			rectangle.x = this.location.x - Block.getHalfBlockSize();
-			rectangle.y = this.location.y - Block.getHalfBlockSize();
-			Universe.renderingLayer.addChild(rectangle);
-			Universe.renderingLayer.update();
-		}
-	}
 
 	static getHalfBlockSize() {
 		return 5;
@@ -131,9 +120,18 @@ class Entity implements TimeListeners, SelfRendering {
 		}
 	}
 
-	render () {
+	render = () => {
 		if (Universe.readyForRender()) {
-			Enumerable.From(this.blocks).ForEach("$.render()");
+			Enumerable.From(this.blocks).ForEach(function(b) {
+				if (Universe.readyForRender()) {
+					var rectangle = new createjs.Shape();
+					rectangle.graphics.beginFill("DeepSkyBlue").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getHalfBlockSize() * 2, Block.getHalfBlockSize() * 2);
+					rectangle.x = b.location.x - Block.getHalfBlockSize();
+					rectangle.y = b.location.y - Block.getHalfBlockSize();
+					Universe.renderingLayer.addChild(rectangle);
+					Universe.renderingLayer.update();
+				}
+			});
 		}
 	}
 

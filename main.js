@@ -47,17 +47,6 @@ var Block = (function () {
     function Block(location) {
         this.location = location;
     }
-    Block.prototype.render = function () {
-        console.log("Drawing Block at " + this.location.x + " " + this.location.y);
-        if (Universe.readyForRender()) {
-            var rectangle = new createjs.Shape();
-            rectangle.graphics.beginFill("DeepSkyBlue").drawRect(this.location.x - Block.getHalfBlockSize(), this.location.y - Block.getHalfBlockSize(), Block.getHalfBlockSize() * 2, Block.getHalfBlockSize() * 2);
-            rectangle.x = this.location.x - Block.getHalfBlockSize();
-            rectangle.y = this.location.y - Block.getHalfBlockSize();
-            Universe.renderingLayer.addChild(rectangle);
-            Universe.renderingLayer.update();
-        }
-    };
     Block.getHalfBlockSize = function () {
         return 5;
     };
@@ -65,8 +54,23 @@ var Block = (function () {
 }());
 var Entity = (function () {
     function Entity(blocks, location) {
+        var _this = this;
         this.blocks = blocks;
         this.location = location;
+        this.render = function () {
+            if (Universe.readyForRender()) {
+                Enumerable.From(_this.blocks).ForEach(function (b) {
+                    if (Universe.readyForRender()) {
+                        var rectangle = new createjs.Shape();
+                        rectangle.graphics.beginFill("DeepSkyBlue").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getHalfBlockSize() * 2, Block.getHalfBlockSize() * 2);
+                        rectangle.x = b.location.x - Block.getHalfBlockSize();
+                        rectangle.y = b.location.y - Block.getHalfBlockSize();
+                        Universe.renderingLayer.addChild(rectangle);
+                        Universe.renderingLayer.update();
+                    }
+                });
+            }
+        };
         this.alive = true;
         this.age = 0;
     }
@@ -101,11 +105,6 @@ var Entity = (function () {
         else {
             this.location = new Loc(Math.floor(Math.random() * 500), Math.floor(Math.random() * 200));
             this.render();
-        }
-    };
-    Entity.prototype.render = function () {
-        if (Universe.readyForRender()) {
-            Enumerable.From(this.blocks).ForEach("$.render()");
         }
     };
     Entity.getEntityComparison = function (entity1, entity2) {
