@@ -1,14 +1,10 @@
-var Student = (function () {
-    function Student(firstName, middleName, lastName) {
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
-        this.fullName = firstName + " " + middleName + " " + lastName;
-    }
-    return Student;
-}());
-function main(person) {
-    return "Hello, " + person.firstName + " " + person.lastName;
+// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/createjs/createjs.d.ts" />
+function init() {
+    var stage = new createjs.Stage("demoCanvas");
+    var circle = new createjs.Shape();
+    circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);
+    circle.x = 100;
+    circle.y = 100;
+    stage.addChild(circle);
+    stage.update();
 }
-var user = new Student("Jane", "M.", "Doe");
-document.body.innerHTML = main(user);

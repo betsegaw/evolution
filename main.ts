@@ -1,19 +1,12 @@
-class Student {
-	fullName: string;
-	constructor(public firstName, public middleName, public lastName) {
-		this.fullName = firstName + " " + middleName + " " + lastName;
-	}
+// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/createjs/createjs.d.ts" />
+
+function init() {
+	var stage = new createjs.Stage("demoCanvas");
+
+	var circle = new createjs.Shape();
+	circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);
+	circle.x = 100;
+	circle.y = 100;
+	stage.addChild(circle);
+	stage.update();
 }
-
-interface Person {
-	firstName: string;
-	lastName: string;
-}
-
-function main(person: Person) {
-	return "Hello, " + person.firstName + " " + person.lastName;
-}
-
-var user = new Student("Jane", "M.", "Doe");
-
-document.body.innerHTML = main(user);
