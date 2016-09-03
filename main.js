@@ -1,4 +1,4 @@
-// <reference path="https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/createjs/createjs.d.ts" />
+/// <reference path="DefinitelyTyped\createjs\createjs.d.ts" />
 function init() {
     var stage = new createjs.Stage("demoCanvas");
     var circle = new createjs.Shape();
