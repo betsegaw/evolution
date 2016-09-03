@@ -63,7 +63,19 @@ var Entity = (function () {
         var height = Enumerable.From(this.blocks).Max("$.location.y") - Enumerable.From(this.blocks).Min("$.location.y");
         return new Bounds(width, height);
     };
-    Entity.prototype.getEntityIntersection = function (entity) {
+    Entity.getEntityComparison = function (entity1, entity2) {
+        entity1.recenter();
+        entity2.recenter();
+        var intersection = Enumerable.From(entity1.blocks).Intersect(Enumerable.From(entity2.blocks)).ToArray();
+        var unique = Enumerable.From(entity1.blocks).Except(Enumerable.From(entity2.blocks)).ToArray();
+        return { intersection: intersection, unique: unique };
+    };
+    Entity.mate = function (entity1, entity2) {
+        var comparison = Entity.getEntityComparison(entity1, entity2);
+        var newEntity = new Entity(comparison.intersection, new Loc(entity1.location.x, entity2.location.y));
+        Enumerable.From(comparison.unique).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
+            newEntity.addBlock(x); });
+        return newEntity;
     };
     return Entity;
 }());

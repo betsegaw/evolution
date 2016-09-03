@@ -72,13 +72,23 @@ class Entity {
 		return new Bounds(width, height);
 	}
 
-	getEntityComparison(entity: Entity): ComparisonResult { 
-		this.recenter();
-		entity.recenter();
+	static getEntityComparison(entity1: Entity, entity2: Entity): ComparisonResult {
+		entity1.recenter();
+		entity2.recenter();
 
-		var intersection = Enumerable.From(this.blocks).Intersect(Enumerable.From(entity.blocks)).ToArray();
-		var unique =  Enumerable.From(this.blocks).Except(Enumerable.From(entity.blocks)).ToArray();
+		var intersection = Enumerable.From(entity1.blocks).Intersect(Enumerable.From(entity2.blocks)).ToArray();
+		var unique = Enumerable.From(entity1.blocks).Except(Enumerable.From(entity2.blocks)).ToArray();
 
-		return { intersection: intersection, unique: unique};
+		return { intersection: intersection, unique: unique };
+	}
+
+	static mate(entity1: Entity, entity2: Entity) : Entity {
+		var comparison = Entity.getEntityComparison(entity1,entity2);
+
+		var newEntity = new Entity(comparison.intersection, new Loc(entity1.location.x, entity2.location.y));
+
+		Enumerable.From(comparison.unique).ForEach(function(x) { if (Math.floor(Math.random()*2) == 1) newEntity.addBlock(x)});
+
+		return newEntity;
 	}
 }
