@@ -3,11 +3,11 @@
 
 function init() {
 	var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(40, 40)));
-	Universe.AddEntity(new Entity([new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
-	Universe.AddEntity(new Entity([new Block(new Loc(30, 30))], new Loc(0, 0)));
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30)), new Block(new Loc(40, 40))], new Loc(0, 0)));
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
+	Universe.AddEntity(new Entity([new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
+	Universe.AddEntity(new Entity([new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30)), new Block(new Loc(40, 40))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
 }
 
 function testLinq(): Bounds {
@@ -126,7 +126,7 @@ class Entity implements TimeListeners, SelfRendering {
 			return;
 		}
 		else {
-			this.location = new Loc(Math.floor(Math.random() * CANVAS_WIDTH), Math.floor(Math.random() * CANVAS_HEIGHT));
+			this.location = new Loc(this.location.x + Math.floor(Math.random() * 3) - 1, this.location.y + Math.floor(Math.random() * 3) - 1);
 
 			this.render();
 		}
@@ -246,7 +246,7 @@ class TimeKeeper {
 	constructor() {
 		this.listeners = [];
 		this.counter = 0;
-		this.intervalID = window.setInterval(this.myCallback, 1000);
+		this.intervalID = window.setInterval(this.myCallback, 10);
 	}
 
 	myCallback = () => {
