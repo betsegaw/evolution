@@ -26,8 +26,8 @@ function testTimer() {
     var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
     t.listeners.push(entity);
 }
-var CANVAS_WIDTH = 100;
-var CANVAS_HEIGHT = 100;
+var CANVAS_WIDTH = 1000;
+var CANVAS_HEIGHT = 1000;
 var Bounds = (function () {
     function Bounds(width, height) {
         this.width = width;
@@ -199,7 +199,7 @@ var TimeKeeper = (function () {
         };
         this.listeners = [];
         this.counter = 0;
-        this.intervalID = window.setInterval(this.myCallback, 100);
+        this.intervalID = window.setInterval(this.myCallback, 1000);
     }
     return TimeKeeper;
 }());

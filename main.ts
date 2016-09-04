@@ -34,8 +34,8 @@ function testTimer() {
 	t.listeners.push(entity);
 }
 
-const CANVAS_WIDTH = 100;
-const CANVAS_HEIGHT = 100;
+const CANVAS_WIDTH = 1000;
+const CANVAS_HEIGHT = 1000;
 
 interface ComparisonResult {
 	intersection: Block[];
@@ -246,7 +246,7 @@ class TimeKeeper {
 	constructor() {
 		this.listeners = [];
 		this.counter = 0;
-		this.intervalID = window.setInterval(this.myCallback, 100);
+		this.intervalID = window.setInterval(this.myCallback, 1000);
 	}
 
 	myCallback = () => {
