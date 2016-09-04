@@ -3,11 +3,9 @@
 
 function init() {
 	var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
-	Universe.AddEntity(new Entity([new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
-	Universe.AddEntity(new Entity([new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30)), new Block(new Loc(40, 40))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH/2, CANVAS_HEIGHT/2)));
+	for (var i = 0; i < 200; i ++) {
+		Universe.AddEntity(new Entity([new Block(new Loc(0, 0))], new Loc( Math.floor(Math.random() * CANVAS_WIDTH),  Math.floor(Math.random() * CANVAS_HEIGHT))));
+	}
 }
 
 function testLinq(): Bounds {
@@ -34,8 +32,8 @@ function testTimer() {
 	t.listeners.push(entity);
 }
 
-const CANVAS_WIDTH = 1000;
-const CANVAS_HEIGHT = 1000;
+const CANVAS_WIDTH = 400;
+const CANVAS_HEIGHT = 400;
 
 interface ComparisonResult {
 	intersection: Block[];
@@ -84,7 +82,7 @@ class Entity implements TimeListeners, SelfRendering {
 	}
 
 	getLifeExpectancy(): number {
-		return 10000 - this.blocks.length;
+		return 30 - this.blocks.length;
 	}
 
 	recenter() {
@@ -113,9 +111,9 @@ class Entity implements TimeListeners, SelfRendering {
 	getEntityPotentialGrowthBlocks(): Block[] {
 		var growthPossibilities = Enumerable.From([]);
 
-		Enumerable.From(this.blocks).ForEach(function(x) { growthPossibilities.Union(Entity.getSurroundingBlocks(x)); });
+		Enumerable.From(this.blocks).ForEach(function(x) { growthPossibilities = growthPossibilities.Union(Entity.getSurroundingBlocks(x)); });
 
-		return growthPossibilities.Except(this.blocks).ToArray();
+		return growthPossibilities.Except(this.blocks, function(x) { return JSON.stringify(x); }).ToArray();
 	}
 
 	stepForward(sequence: number) {
@@ -126,7 +124,7 @@ class Entity implements TimeListeners, SelfRendering {
 			return;
 		}
 		else {
-			this.location = new Loc(this.location.x + Math.floor(Math.random() * 3) - 1, this.location.y + Math.floor(Math.random() * 3) - 1);
+			this.location = new Loc(this.location.x + Math.floor(Math.random() * 21) - 10, this.location.y + Math.floor(Math.random() * 21) - 10);
 
 			this.render();
 		}
@@ -149,8 +147,8 @@ class Entity implements TimeListeners, SelfRendering {
 		entity1.recenter();
 		entity2.recenter();
 
-		var intersection = Enumerable.From(entity1.blocks).Intersect(Enumerable.From(entity2.blocks)).ToArray();
-		var unique = Enumerable.From(entity1.blocks).Except(Enumerable.From(entity2.blocks)).ToArray();
+		var intersection = Enumerable.From(entity1.blocks).Intersect(Enumerable.From(entity2.blocks), function(x) { return JSON.stringify(x); }).ToArray();
+		var unique = Enumerable.From(entity1.blocks).Except(Enumerable.From(entity2.blocks), function(x) { return JSON.stringify(x); }).ToArray();
 
 		return { intersection: intersection, unique: unique };
 	}
@@ -160,9 +158,9 @@ class Entity implements TimeListeners, SelfRendering {
 
 		var comparison = Entity.getEntityComparison(entity1, entity2);
 
-		var newEntity = new Entity(comparison.intersection, new Loc(entity1.location.x, entity2.location.y));
+		var newEntity = new Entity(comparison.intersection, new Loc( Math.floor(Math.random() * CANVAS_WIDTH),  Math.floor(Math.random() * CANVAS_HEIGHT)));
 
-		Enumerable.From(comparison.unique).Intersect(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
+		Enumerable.From(comparison.unique).Intersect(newEntity.getEntityPotentialGrowthBlocks(), function(x) { return JSON.stringify(x); }).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
 		
 		Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
 
@@ -204,8 +202,9 @@ class Universe implements TimeListeners{
 		var possibleMates = [];
 
 		Enumerable.From(Universe.entities).ForEach(function(entity) { 
-			if (possibleMates.length > 0) {
+			if (possibleMates.length > 0 && entity.alive) {
 				Enumerable.From(possibleMates)
+					.Where(function(mate) { return mate.alive})
 					.Where(function(mate) { return entity.location.x === mate.location.x && entity.location.y === mate.location.y;})
 					.ForEach(function(mate) { Universe.AddEntity(Entity.mate(entity, mate)); });
 			}
@@ -246,7 +245,7 @@ class TimeKeeper {
 	constructor() {
 		this.listeners = [];
 		this.counter = 0;
-		this.intervalID = window.setInterval(this.myCallback, 10);
+		this.intervalID = window.setInterval(this.myCallback, 1000);
 	}
 
 	myCallback = () => {

@@ -2,11 +2,9 @@
 /// <reference path="DefinitelyTyped\linq\linq.d.ts" />
 function init() {
     var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)));
-    Universe.AddEntity(new Entity([new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)));
-    Universe.AddEntity(new Entity([new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)));
-    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30)), new Block(new Loc(40, 40))], new Loc(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)));
-    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)));
+    for (var i = 0; i < 200; i++) {
+        Universe.AddEntity(new Entity([new Block(new Loc(0, 0))], new Loc(Math.floor(Math.random() * CANVAS_WIDTH), Math.floor(Math.random() * CANVAS_HEIGHT))));
+    }
 }
 function testLinq() {
     var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
@@ -26,8 +24,8 @@ function testTimer() {
     var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
     t.listeners.push(entity);
 }
-var CANVAS_WIDTH = 1000;
-var CANVAS_HEIGHT = 1000;
+var CANVAS_WIDTH = 400;
+var CANVAS_HEIGHT = 400;
 var Bounds = (function () {
     function Bounds(width, height) {
         this.width = width;
@@ -78,7 +76,7 @@ var Entity = (function () {
         this.blocks.push(block);
     };
     Entity.prototype.getLifeExpectancy = function () {
-        return 10000 - this.blocks.length;
+        return 30 - this.blocks.length;
     };
     Entity.prototype.recenter = function () {
         var bounds = this.getBounds();
@@ -98,8 +96,8 @@ var Entity = (function () {
     };
     Entity.prototype.getEntityPotentialGrowthBlocks = function () {
         var growthPossibilities = Enumerable.From([]);
-        Enumerable.From(this.blocks).ForEach(function (x) { growthPossibilities.Union(Entity.getSurroundingBlocks(x)); });
-        return growthPossibilities.Except(this.blocks).ToArray();
+        Enumerable.From(this.blocks).ForEach(function (x) { growthPossibilities = growthPossibilities.Union(Entity.getSurroundingBlocks(x)); });
+        return growthPossibilities.Except(this.blocks, function (x) { return JSON.stringify(x); }).ToArray();
     };
     Entity.prototype.stepForward = function (sequence) {
         this.age++;
@@ -108,22 +106,22 @@ var Entity = (function () {
             return;
         }
         else {
-            this.location = new Loc(this.location.x + Math.floor(Math.random() * 3) - 1, this.location.y + Math.floor(Math.random() * 3) - 1);
+            this.location = new Loc(this.location.x + Math.floor(Math.random() * 21) - 10, this.location.y + Math.floor(Math.random() * 21) - 10);
             this.render();
         }
     };
     Entity.getEntityComparison = function (entity1, entity2) {
         entity1.recenter();
         entity2.recenter();
-        var intersection = Enumerable.From(entity1.blocks).Intersect(Enumerable.From(entity2.blocks)).ToArray();
-        var unique = Enumerable.From(entity1.blocks).Except(Enumerable.From(entity2.blocks)).ToArray();
+        var intersection = Enumerable.From(entity1.blocks).Intersect(Enumerable.From(entity2.blocks), function (x) { return JSON.stringify(x); }).ToArray();
+        var unique = Enumerable.From(entity1.blocks).Except(Enumerable.From(entity2.blocks), function (x) { return JSON.stringify(x); }).ToArray();
         return { intersection: intersection, unique: unique };
     };
     Entity.mate = function (entity1, entity2) {
         console.log("A child is born...!");
         var comparison = Entity.getEntityComparison(entity1, entity2);
-        var newEntity = new Entity(comparison.intersection, new Loc(entity1.location.x, entity2.location.y));
-        Enumerable.From(comparison.unique).Intersect(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
+        var newEntity = new Entity(comparison.intersection, new Loc(Math.floor(Math.random() * CANVAS_WIDTH), Math.floor(Math.random() * CANVAS_HEIGHT)));
+        Enumerable.From(comparison.unique).Intersect(newEntity.getEntityPotentialGrowthBlocks(), function (x) { return JSON.stringify(x); }).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
             newEntity.addBlock(x); });
         Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
             newEntity.addBlock(x); });
@@ -159,8 +157,9 @@ var Universe = (function () {
     Universe.checkForMating = function () {
         var possibleMates = [];
         Enumerable.From(Universe.entities).ForEach(function (entity) {
-            if (possibleMates.length > 0) {
+            if (possibleMates.length > 0 && entity.alive) {
                 Enumerable.From(possibleMates)
+                    .Where(function (mate) { return mate.alive; })
                     .Where(function (mate) { return entity.location.x === mate.location.x && entity.location.y === mate.location.y; })
                     .ForEach(function (mate) { Universe.AddEntity(Entity.mate(entity, mate)); });
             }
@@ -199,7 +198,7 @@ var TimeKeeper = (function () {
         };
         this.listeners = [];
         this.counter = 0;
-        this.intervalID = window.setInterval(this.myCallback, 10);
+        this.intervalID = window.setInterval(this.myCallback, 1000);
     }
     return TimeKeeper;
 }());
