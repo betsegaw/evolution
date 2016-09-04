@@ -2,7 +2,7 @@
 /// <reference path="DefinitelyTyped\linq\linq.d.ts" />
 function init() {
     var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-    for (var i = 0; i < 200; i++) {
+    for (var i = 0; i < 800; i++) {
         Universe.AddEntity(new Entity([new Block(new Loc(0, 0))], new Loc(Math.floor(Math.random() * CANVAS_WIDTH), Math.floor(Math.random() * CANVAS_HEIGHT))));
     }
 }
@@ -24,8 +24,8 @@ function testTimer() {
     var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
     t.listeners.push(entity);
 }
-var CANVAS_WIDTH = 400;
-var CANVAS_HEIGHT = 400;
+var CANVAS_WIDTH = 1000;
+var CANVAS_HEIGHT = 1000;
 var Bounds = (function () {
     function Bounds(width, height) {
         this.width = width;

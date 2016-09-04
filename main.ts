@@ -3,7 +3,7 @@
 
 function init() {
 	var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-	for (var i = 0; i < 200; i ++) {
+	for (var i = 0; i < 800; i ++) {
 		Universe.AddEntity(new Entity([new Block(new Loc(0, 0))], new Loc( Math.floor(Math.random() * CANVAS_WIDTH),  Math.floor(Math.random() * CANVAS_HEIGHT))));
 	}
 }
@@ -32,8 +32,8 @@ function testTimer() {
 	t.listeners.push(entity);
 }
 
-const CANVAS_WIDTH = 400;
-const CANVAS_HEIGHT = 400;
+const CANVAS_WIDTH = 1000;
+const CANVAS_HEIGHT = 1000;
 
 interface ComparisonResult {
 	intersection: Block[];
