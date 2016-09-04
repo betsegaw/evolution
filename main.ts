@@ -2,8 +2,8 @@
 /// <reference path="DefinitelyTyped\linq\linq.d.ts" />
 
 function init() {
-	var universe = new Universe(CANVAS_WIDTH,CANVAS_HEIGHT,"demoCanvas");
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+	var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(40, 40)));
 	Universe.AddEntity(new Entity([new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
 	Universe.AddEntity(new Entity([new Block(new Loc(30, 30))], new Loc(0, 0)));
 	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30)), new Block(new Loc(40, 40))], new Loc(0, 0)));
@@ -34,9 +34,8 @@ function testTimer() {
 	t.listeners.push(entity);
 }
 
-const BLOCK_SIZE = 2;
-const CANVAS_WIDTH = 1000;
-const CANVAS_HEIGHT = 1000;
+const CANVAS_WIDTH = 100;
+const CANVAS_HEIGHT = 100;
 
 interface ComparisonResult {
 	intersection: Block[];
@@ -65,13 +64,17 @@ class Block {
 	static getHalfBlockSize() {
 		return 5;
 	}
+
+	static getFullBlockSize() {
+		return 10;
+	}
 }
 
 class Entity implements TimeListeners, SelfRendering {
 	alive: boolean;
 	age: number;
 
-	constructor(public blocks: Block[], public location: Loc) { 
+	constructor(public blocks: Block[], public location: Loc) {
 		this.alive = true;
 		this.age = 0;
 	}
@@ -81,7 +84,7 @@ class Entity implements TimeListeners, SelfRendering {
 	}
 
 	getLifeExpectancy(): number {
-		return 70 - this.blocks.length;
+		return 10000 - this.blocks.length;
 	}
 
 	recenter() {
@@ -107,15 +110,24 @@ class Entity implements TimeListeners, SelfRendering {
 		return new Bounds(width, height);
 	}
 
+	getEntityPotentialGrowthBlocks(): Block[] {
+		var growthPossibilities = Enumerable.From([]);
+
+		Enumerable.From(this.blocks).ForEach(function(x) { growthPossibilities.Union(Entity.getSurroundingBlocks(x)); });
+
+		return growthPossibilities.Except(this.blocks).ToArray();
+	}
+
 	stepForward(sequence: number) {
 		this.age++;
 
-		if (this.getLifeExpectancy() - this.age < 0 ) {
+		if (this.getLifeExpectancy() - this.age < 0) {
 			this.alive = false;
 			return;
 		}
 		else {
-			this.location = new Loc(Math.floor(Math.random() * 1500), Math.floor(Math.random() * 900));
+			this.location = new Loc(Math.floor(Math.random() * CANVAS_WIDTH), Math.floor(Math.random() * CANVAS_HEIGHT));
+
 			this.render();
 		}
 	}
@@ -125,9 +137,7 @@ class Entity implements TimeListeners, SelfRendering {
 			Enumerable.From(this.blocks).ForEach(function(b) {
 				if (Universe.readyForRender()) {
 					var rectangle = new createjs.Shape();
-					rectangle.graphics.beginFill("DeepSkyBlue").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getHalfBlockSize() * 2, Block.getHalfBlockSize() * 2);
-					rectangle.x = b.location.x - Block.getHalfBlockSize();
-					rectangle.y = b.location.y - Block.getHalfBlockSize();
+					rectangle.graphics.beginFill("DeepSkyBlue").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getFullBlockSize(), Block.getFullBlockSize());
 					Universe.renderingLayer.addChild(rectangle);
 					Universe.renderingLayer.update();
 				}
@@ -146,17 +156,33 @@ class Entity implements TimeListeners, SelfRendering {
 	}
 
 	static mate(entity1: Entity, entity2: Entity): Entity {
+		console.log("A child is born...!");
+
 		var comparison = Entity.getEntityComparison(entity1, entity2);
 
 		var newEntity = new Entity(comparison.intersection, new Loc(entity1.location.x, entity2.location.y));
 
-		Enumerable.From(comparison.unique).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
+		Enumerable.From(comparison.unique).Intersect(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
+		
+		Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
 
 		return newEntity;
 	}
+
+	static getSurroundingBlocks (block: Block): Block [] {
+		return [new Block(new Loc(block.location.x - Block.getFullBlockSize(),block.location.y - Block.getFullBlockSize())),
+			new Block(new Loc(block.location.x,block.location.y - Block.getFullBlockSize())),
+			new Block(new Loc(block.location.x + Block.getFullBlockSize(),block.location.y - Block.getFullBlockSize())),
+			new Block(new Loc(block.location.x + Block.getFullBlockSize(),block.location.y)),
+			new Block(new Loc(block.location.x + Block.getFullBlockSize(),block.location.y + Block.getFullBlockSize())),
+			new Block(new Loc(block.location.x, block.location.y + Block.getFullBlockSize())),
+			new Block(new Loc(block.location.x - Block.getFullBlockSize(),block.location.y + Block.getFullBlockSize())),
+			new Block(new Loc(block.location.x - Block.getFullBlockSize(),block.location.y))
+		];
+	}
 }
 
-class Universe {
+class Universe implements TimeListeners{
 	static entities: Entity[];
 	static renderingLayer: createjs.Stage;
 	static timer: TimeKeeper;
@@ -164,8 +190,28 @@ class Universe {
 	constructor(public canvasWidth: number, public canvasHeight: number, canvasElementName: string) {
 		var stage = new createjs.Stage(canvasElementName);
 		Universe.timer = new TimeKeeper();
+		Universe.timer.listeners.push(this);
 		Universe.updateRenderingLayer(stage);
 		Universe.entities = [];
+	}
+
+	stepForward (sequence: number) {
+		Enumerable.From(Universe.entities).ForEach(function(x) { x.stepForward(this.counter) });
+		Universe.checkForMating();
+	}
+
+	static checkForMating() {
+		var possibleMates = [];
+
+		Enumerable.From(Universe.entities).ForEach(function(entity) { 
+			if (possibleMates.length > 0) {
+				Enumerable.From(possibleMates)
+					.Where(function(mate) { return entity.location.x === mate.location.x && entity.location.y === mate.location.y;})
+					.ForEach(function(mate) { Universe.AddEntity(Entity.mate(entity, mate)); });
+			}
+
+			possibleMates.push(entity);
+		});
 	}
 
 	static updateRenderingLayer(renderingLayer: createjs.Stage) {
@@ -177,7 +223,7 @@ class Universe {
 		this.renderingLayer.update();
 	}
 
-	static readyForRender() : Boolean {
+	static readyForRender(): Boolean {
 		if (typeof this.renderingLayer !== 'undefined') {
 			return true;
 		}
@@ -189,7 +235,6 @@ class Universe {
 
 	static AddEntity(entity: Entity) {
 		Universe.entities.push(entity);
-		Universe.timer.listeners.push(entity);
 	}
 }
 
@@ -201,13 +246,14 @@ class TimeKeeper {
 	constructor() {
 		this.listeners = [];
 		this.counter = 0;
-		this.intervalID = window.setInterval(this.myCallback, 1000);
+		this.intervalID = window.setInterval(this.myCallback, 100);
 	}
 
 	myCallback = () => {
 		if (Universe.readyForRender()) {
 			Universe.clearRenderingLayer();
 		}
+
 		Enumerable.From(this.listeners).ForEach(function(x) { x.stepForward(_this.counter) });
 		this.counter++;
 	}

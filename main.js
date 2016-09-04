@@ -2,7 +2,7 @@
 /// <reference path="DefinitelyTyped\linq\linq.d.ts" />
 function init() {
     var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(40, 40)));
     Universe.AddEntity(new Entity([new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
     Universe.AddEntity(new Entity([new Block(new Loc(30, 30))], new Loc(0, 0)));
     Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30)), new Block(new Loc(40, 40))], new Loc(0, 0)));
@@ -26,9 +26,8 @@ function testTimer() {
     var entity = new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0));
     t.listeners.push(entity);
 }
-var BLOCK_SIZE = 10;
-var CANVAS_WIDTH = 1000;
-var CANVAS_HEIGHT = 1000;
+var CANVAS_WIDTH = 100;
+var CANVAS_HEIGHT = 100;
 var Bounds = (function () {
     function Bounds(width, height) {
         this.width = width;
@@ -50,6 +49,9 @@ var Block = (function () {
     Block.getHalfBlockSize = function () {
         return 5;
     };
+    Block.getFullBlockSize = function () {
+        return 10;
+    };
     return Block;
 }());
 var Entity = (function () {
@@ -62,9 +64,7 @@ var Entity = (function () {
                 Enumerable.From(_this.blocks).ForEach(function (b) {
                     if (Universe.readyForRender()) {
                         var rectangle = new createjs.Shape();
-                        rectangle.graphics.beginFill("DeepSkyBlue").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getHalfBlockSize() * 2, Block.getHalfBlockSize() * 2);
-                        rectangle.x = b.location.x - Block.getHalfBlockSize();
-                        rectangle.y = b.location.y - Block.getHalfBlockSize();
+                        rectangle.graphics.beginFill("DeepSkyBlue").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getFullBlockSize(), Block.getFullBlockSize());
                         Universe.renderingLayer.addChild(rectangle);
                         Universe.renderingLayer.update();
                     }
@@ -78,7 +78,7 @@ var Entity = (function () {
         this.blocks.push(block);
     };
     Entity.prototype.getLifeExpectancy = function () {
-        return 70 - this.blocks.length;
+        return 10000 - this.blocks.length;
     };
     Entity.prototype.recenter = function () {
         var bounds = this.getBounds();
@@ -96,6 +96,11 @@ var Entity = (function () {
         var height = Enumerable.From(this.blocks).Max("$.location.y") - Enumerable.From(this.blocks).Min("$.location.y");
         return new Bounds(width, height);
     };
+    Entity.prototype.getEntityPotentialGrowthBlocks = function () {
+        var growthPossibilities = Enumerable.From([]);
+        Enumerable.From(this.blocks).ForEach(function (x) { growthPossibilities.Union(Entity.getSurroundingBlocks(x)); });
+        return growthPossibilities.Except(this.blocks).ToArray();
+    };
     Entity.prototype.stepForward = function (sequence) {
         this.age++;
         if (this.getLifeExpectancy() - this.age < 0) {
@@ -103,7 +108,7 @@ var Entity = (function () {
             return;
         }
         else {
-            this.location = new Loc(Math.floor(Math.random() * 1500), Math.floor(Math.random() * 900));
+            this.location = new Loc(Math.floor(Math.random() * CANVAS_WIDTH), Math.floor(Math.random() * CANVAS_HEIGHT));
             this.render();
         }
     };
@@ -115,11 +120,25 @@ var Entity = (function () {
         return { intersection: intersection, unique: unique };
     };
     Entity.mate = function (entity1, entity2) {
+        console.log("A child is born...!");
         var comparison = Entity.getEntityComparison(entity1, entity2);
         var newEntity = new Entity(comparison.intersection, new Loc(entity1.location.x, entity2.location.y));
-        Enumerable.From(comparison.unique).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
+        Enumerable.From(comparison.unique).Intersect(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
+            newEntity.addBlock(x); });
+        Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
             newEntity.addBlock(x); });
         return newEntity;
+    };
+    Entity.getSurroundingBlocks = function (block) {
+        return [new Block(new Loc(block.location.x - Block.getFullBlockSize(), block.location.y - Block.getFullBlockSize())),
+            new Block(new Loc(block.location.x, block.location.y - Block.getFullBlockSize())),
+            new Block(new Loc(block.location.x + Block.getFullBlockSize(), block.location.y - Block.getFullBlockSize())),
+            new Block(new Loc(block.location.x + Block.getFullBlockSize(), block.location.y)),
+            new Block(new Loc(block.location.x + Block.getFullBlockSize(), block.location.y + Block.getFullBlockSize())),
+            new Block(new Loc(block.location.x, block.location.y + Block.getFullBlockSize())),
+            new Block(new Loc(block.location.x - Block.getFullBlockSize(), block.location.y + Block.getFullBlockSize())),
+            new Block(new Loc(block.location.x - Block.getFullBlockSize(), block.location.y))
+        ];
     };
     return Entity;
 }());
@@ -129,9 +148,25 @@ var Universe = (function () {
         this.canvasHeight = canvasHeight;
         var stage = new createjs.Stage(canvasElementName);
         Universe.timer = new TimeKeeper();
+        Universe.timer.listeners.push(this);
         Universe.updateRenderingLayer(stage);
         Universe.entities = [];
     }
+    Universe.prototype.stepForward = function (sequence) {
+        Enumerable.From(Universe.entities).ForEach(function (x) { x.stepForward(this.counter); });
+        Universe.checkForMating();
+    };
+    Universe.checkForMating = function () {
+        var possibleMates = [];
+        Enumerable.From(Universe.entities).ForEach(function (entity) {
+            if (possibleMates.length > 0) {
+                Enumerable.From(possibleMates)
+                    .Where(function (mate) { return entity.location.x === mate.location.x && entity.location.y === mate.location.y; })
+                    .ForEach(function (mate) { Universe.AddEntity(Entity.mate(entity, mate)); });
+            }
+            possibleMates.push(entity);
+        });
+    };
     Universe.updateRenderingLayer = function (renderingLayer) {
         this.renderingLayer = renderingLayer;
     };
@@ -149,7 +184,6 @@ var Universe = (function () {
     };
     Universe.AddEntity = function (entity) {
         Universe.entities.push(entity);
-        Universe.timer.listeners.push(entity);
     };
     return Universe;
 }());
@@ -165,7 +199,7 @@ var TimeKeeper = (function () {
         };
         this.listeners = [];
         this.counter = 0;
-        this.intervalID = window.setInterval(this.myCallback, 1000);
+        this.intervalID = window.setInterval(this.myCallback, 100);
     }
     return TimeKeeper;
 }());
