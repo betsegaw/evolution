@@ -3,9 +3,9 @@
 function init() {
     var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
     Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
-    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
-    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
-    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+    Universe.AddEntity(new Entity([new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+    Universe.AddEntity(new Entity([new Block(new Loc(30, 30))], new Loc(0, 0)));
+    Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30)), new Block(new Loc(40, 40))], new Loc(0, 0)));
     Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
 }
 function testLinq() {
@@ -78,7 +78,7 @@ var Entity = (function () {
         this.blocks.push(block);
     };
     Entity.prototype.getLifeExpectancy = function () {
-        return 15 - this.blocks.length;
+        return 70 - this.blocks.length;
     };
     Entity.prototype.recenter = function () {
         var bounds = this.getBounds();
@@ -103,7 +103,7 @@ var Entity = (function () {
             return;
         }
         else {
-            this.location = new Loc(Math.floor(Math.random() * 500), Math.floor(Math.random() * 200));
+            this.location = new Loc(Math.floor(Math.random() * 1500), Math.floor(Math.random() * 900));
             this.render();
         }
     };

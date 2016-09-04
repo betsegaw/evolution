@@ -4,9 +4,9 @@
 function init() {
 	var universe = new Universe(CANVAS_WIDTH,CANVAS_HEIGHT,"demoCanvas");
 	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
-	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+	Universe.AddEntity(new Entity([new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
+	Universe.AddEntity(new Entity([new Block(new Loc(30, 30))], new Loc(0, 0)));
+	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30)), new Block(new Loc(40, 40))], new Loc(0, 0)));
 	Universe.AddEntity(new Entity([new Block(new Loc(0, 0)), new Block(new Loc(10, 10)), new Block(new Loc(20, 20)), new Block(new Loc(30, 30))], new Loc(0, 0)));
 }
 
@@ -34,7 +34,7 @@ function testTimer() {
 	t.listeners.push(entity);
 }
 
-const BLOCK_SIZE = 10;
+const BLOCK_SIZE = 2;
 const CANVAS_WIDTH = 1000;
 const CANVAS_HEIGHT = 1000;
 
@@ -81,7 +81,7 @@ class Entity implements TimeListeners, SelfRendering {
 	}
 
 	getLifeExpectancy(): number {
-		return 15 - this.blocks.length;
+		return 70 - this.blocks.length;
 	}
 
 	recenter() {
@@ -115,7 +115,7 @@ class Entity implements TimeListeners, SelfRendering {
 			return;
 		}
 		else {
-			this.location = new Loc(Math.floor(Math.random() * 500), Math.floor(Math.random() * 200));
+			this.location = new Loc(Math.floor(Math.random() * 1500), Math.floor(Math.random() * 900));
 			this.render();
 		}
 	}
