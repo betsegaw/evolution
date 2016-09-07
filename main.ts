@@ -225,6 +225,7 @@ class Universe implements TimeListeners{
 
 	stepForward (sequence: number) {
 		this.LogStats();
+		Universe.entities = Enumerable.From(Universe.entities).Where(function(x) { return x.alive }).ToArray();
 		Enumerable.From(Universe.entities).ForEach(function(x) { x.stepForward(this.counter) });
 		Universe.checkForMating();
 	}
