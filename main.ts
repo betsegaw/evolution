@@ -153,7 +153,7 @@ class Entity implements TimeListeners, SelfRendering {
 		return { intersection: intersection, unique: unique };
 	}
 
-	static mate(entity1: Entity, entity2: Entity): Entity {
+	static mate(entity1: Entity, entity2: Entity): Entity[] {
 		console.log("A child is born...!");
 
 		var comparison = Entity.getEntityComparison(entity1, entity2);
@@ -164,7 +164,28 @@ class Entity implements TimeListeners, SelfRendering {
 		
 		Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
 
-		return newEntity;
+
+
+		return Entity.duplicateEntity(newEntity, 20);
+	}
+
+	static duplicateEntity(entity: Entity, count: number): Entity[] {
+		var result:Entity[] = [];
+
+		for(var i:number = 0; i < count; i++) {
+			result.push(new Entity(Enumerable.From(entity.blocks).Select(function(block) { return new Block(new Loc(block.location.x,block.location.y)); }).ToArray(),new Loc(0,0)));
+		} 
+
+		Entity.randomizeLocation(result, new Loc(0,0), new Loc(CANVAS_WIDTH,CANVAS_HEIGHT));
+
+		return result;
+	}
+
+	static randomizeLocation( entities: Entity[], minTopLeft: Loc, maxBottomRight: Loc) {
+		Enumerable.From(entities).ForEach(function(x) { 
+			x.location = new Loc(Math.floor(Math.random() * (maxBottomRight.x - minTopLeft.x)),  
+				Math.floor(Math.random() * (maxBottomRight.y - minTopLeft.y))); 
+		});
 	}
 
 	static getSurroundingBlocks (block: Block): Block [] {
@@ -206,7 +227,7 @@ class Universe implements TimeListeners{
 				Enumerable.From(possibleMates)
 					.Where(function(mate) { return mate.alive})
 					.Where(function(mate) { return entity.location.x === mate.location.x && entity.location.y === mate.location.y;})
-					.ForEach(function(mate) { Universe.AddEntity(Entity.mate(entity, mate)); });
+					.ForEach(function(mate) { Enumerable.From(Entity.mate(entity, mate)).ForEach(function(x) { Universe.AddEntity(x); }) });
 			}
 
 			possibleMates.push(entity);

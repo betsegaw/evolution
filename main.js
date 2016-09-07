@@ -125,7 +125,20 @@ var Entity = (function () {
             newEntity.addBlock(x); });
         Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
             newEntity.addBlock(x); });
-        return newEntity;
+        return Entity.duplicateEntity(newEntity, 20);
+    };
+    Entity.duplicateEntity = function (entity, count) {
+        var result = [];
+        for (var i = 0; i < count; i++) {
+            result.push(new Entity(Enumerable.From(entity.blocks).Select(function (block) { return new Block(new Loc(block.location.x, block.location.y)); }).ToArray(), new Loc(0, 0)));
+        }
+        Entity.randomizeLocation(result, new Loc(0, 0), new Loc(CANVAS_WIDTH, CANVAS_HEIGHT));
+        return result;
+    };
+    Entity.randomizeLocation = function (entities, minTopLeft, maxBottomRight) {
+        Enumerable.From(entities).ForEach(function (x) {
+            x.location = new Loc(Math.floor(Math.random() * (maxBottomRight.x - minTopLeft.x)), Math.floor(Math.random() * (maxBottomRight.y - minTopLeft.y)));
+        });
     };
     Entity.getSurroundingBlocks = function (block) {
         return [new Block(new Loc(block.location.x - Block.getFullBlockSize(), block.location.y - Block.getFullBlockSize())),
@@ -161,7 +174,7 @@ var Universe = (function () {
                 Enumerable.From(possibleMates)
                     .Where(function (mate) { return mate.alive; })
                     .Where(function (mate) { return entity.location.x === mate.location.x && entity.location.y === mate.location.y; })
-                    .ForEach(function (mate) { Universe.AddEntity(Entity.mate(entity, mate)); });
+                    .ForEach(function (mate) { Enumerable.From(Entity.mate(entity, mate)).ForEach(function (x) { Universe.AddEntity(x); }); });
             }
             possibleMates.push(entity);
         });
