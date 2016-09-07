@@ -125,7 +125,7 @@ var Entity = (function () {
             newEntity.addBlock(x); });
         Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
             newEntity.addBlock(x); });
-        return Entity.duplicateEntity(newEntity, 20);
+        return Entity.duplicateEntity(newEntity, 100);
     };
     Entity.duplicateEntity = function (entity, count) {
         var result = [];

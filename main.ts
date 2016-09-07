@@ -3,7 +3,7 @@
 
 function init() {
 	var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-	for (var i = 0; i < 800; i ++) {
+	for (var i = 0; i < 200; i ++) {
 		Universe.AddEntity(new Entity([new Block(new Loc(0, 0))], new Loc( Math.floor(Math.random() * CANVAS_WIDTH),  Math.floor(Math.random() * CANVAS_HEIGHT))));
 	}
 }
@@ -166,7 +166,7 @@ class Entity implements TimeListeners, SelfRendering {
 
 
 
-		return Entity.duplicateEntity(newEntity, 20);
+		return Entity.duplicateEntity(newEntity, 100);
 	}
 
 	static duplicateEntity(entity: Entity, count: number): Entity[] {
