@@ -3,7 +3,7 @@
 
 function init() {
 	var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-	for (var i = 0; i < 200; i ++) {
+	for (var i = 0; i < STABLE_POPULATION_BLOCK_COUNT; i ++) {
 		Universe.AddEntity(new Entity([new Block(new Loc(0, 0))], new Loc( Math.floor(Math.random() * CANVAS_WIDTH),  Math.floor(Math.random() * CANVAS_HEIGHT))));
 	}
 }
@@ -34,6 +34,7 @@ function testTimer() {
 
 const CANVAS_WIDTH = 1000;
 const CANVAS_HEIGHT = 1000;
+const STABLE_POPULATION_BLOCK_COUNT = 400;
 
 interface ComparisonResult {
 	intersection: Block[];
@@ -82,7 +83,7 @@ class Entity implements TimeListeners, SelfRendering {
 	}
 
 	getLifeExpectancy(): number {
-		return 30 - this.blocks.length;
+		return Entity.getSingleBlockLifeExpectancy() - this.blocks.length + 1;
 	}
 
 	recenter() {
@@ -141,6 +142,14 @@ class Entity implements TimeListeners, SelfRendering {
 				}
 			});
 		}
+	}
+
+	static getSingleBlockLifeExpectancy(): number {
+		var totalBlocksCount: number = Enumerable.From(Universe.entities).Where(function(x) { return x.alive }).Select(function(x) { return x.blocks.length } ).Aggregate(function(x, y) { 
+			return x + y; 
+		});
+
+		return 30 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01; 
 	}
 
 	static getEntityComparison(entity1: Entity, entity2: Entity): ComparisonResult {
@@ -215,8 +224,13 @@ class Universe implements TimeListeners{
 	}
 
 	stepForward (sequence: number) {
+		this.LogStats();
 		Enumerable.From(Universe.entities).ForEach(function(x) { x.stepForward(this.counter) });
 		Universe.checkForMating();
+	}
+
+	LogStats() {
+		console.log("Current Single Block life Expectancy: " + Entity.getSingleBlockLifeExpectancy());
 	}
 
 	static checkForMating() {

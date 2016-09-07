@@ -2,7 +2,7 @@
 /// <reference path="DefinitelyTyped\linq\linq.d.ts" />
 function init() {
     var universe = new Universe(CANVAS_WIDTH, CANVAS_HEIGHT, "demoCanvas");
-    for (var i = 0; i < 800; i++) {
+    for (var i = 0; i < STABLE_POPULATION_BLOCK_COUNT; i++) {
         Universe.AddEntity(new Entity([new Block(new Loc(0, 0))], new Loc(Math.floor(Math.random() * CANVAS_WIDTH), Math.floor(Math.random() * CANVAS_HEIGHT))));
     }
 }
@@ -26,6 +26,7 @@ function testTimer() {
 }
 var CANVAS_WIDTH = 1000;
 var CANVAS_HEIGHT = 1000;
+var STABLE_POPULATION_BLOCK_COUNT = 400;
 var Bounds = (function () {
     function Bounds(width, height) {
         this.width = width;
@@ -76,7 +77,7 @@ var Entity = (function () {
         this.blocks.push(block);
     };
     Entity.prototype.getLifeExpectancy = function () {
-        return 30 - this.blocks.length;
+        return Entity.getSingleBlockLifeExpectancy() - this.blocks.length + 1;
     };
     Entity.prototype.recenter = function () {
         var bounds = this.getBounds();
@@ -109,6 +110,12 @@ var Entity = (function () {
             this.location = new Loc(this.location.x + Math.floor(Math.random() * 21) - 10, this.location.y + Math.floor(Math.random() * 21) - 10);
             this.render();
         }
+    };
+    Entity.getSingleBlockLifeExpectancy = function () {
+        var totalBlocksCount = Enumerable.From(Universe.entities).Where(function (x) { return x.alive; }).Select(function (x) { return x.blocks.length; }).Aggregate(function (x, y) {
+            return x + y;
+        });
+        return 30 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01;
     };
     Entity.getEntityComparison = function (entity1, entity2) {
         entity1.recenter();
@@ -164,8 +171,12 @@ var Universe = (function () {
         Universe.entities = [];
     }
     Universe.prototype.stepForward = function (sequence) {
+        this.LogStats();
         Enumerable.From(Universe.entities).ForEach(function (x) { x.stepForward(this.counter); });
         Universe.checkForMating();
+    };
+    Universe.prototype.LogStats = function () {
+        console.log("Current Single Block life Expectancy: " + Entity.getSingleBlockLifeExpectancy());
     };
     Universe.checkForMating = function () {
         var possibleMates = [];
