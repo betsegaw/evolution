@@ -65,7 +65,6 @@ var Entity = (function () {
                         var rectangle = new createjs.Shape();
                         rectangle.graphics.beginFill("DeepSkyBlue").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getFullBlockSize(), Block.getFullBlockSize());
                         Universe.renderingLayer.addChild(rectangle);
-                        Universe.renderingLayer.update();
                     }
                 });
             }
@@ -175,6 +174,7 @@ var Universe = (function () {
         Universe.entities = Enumerable.From(Universe.entities).Where(function (x) { return x.alive; }).ToArray();
         Enumerable.From(Universe.entities).ForEach(function (x) { x.stepForward(this.counter); });
         Universe.checkForMating();
+        Universe.renderingLayer.update();
     };
     Universe.prototype.LogStats = function () {
         console.log("Current Single Block life Expectancy: " + Entity.getSingleBlockLifeExpectancy());
