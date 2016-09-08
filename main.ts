@@ -172,9 +172,12 @@ class Entity implements TimeListeners, SelfRendering {
 		
 		Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function(x) { if (Math.floor(Math.random() * 2) == 1) newEntity.addBlock(x) });
 
-
-
-		return Entity.duplicateEntity(newEntity, 100);
+		if (newEntity.blocks.length != 0) {
+			return Entity.duplicateEntity(newEntity, 100);
+		}
+		else {
+			return [];
+		}
 	}
 
 	static duplicateEntity(entity: Entity, count: number): Entity[] {
