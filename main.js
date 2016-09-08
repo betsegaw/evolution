@@ -27,6 +27,7 @@ function testTimer() {
 var CANVAS_WIDTH = 1000;
 var CANVAS_HEIGHT = 1000;
 var STABLE_POPULATION_BLOCK_COUNT = 400;
+var SINGLE_BLOCK_MOVEMENT = 50;
 var Bounds = (function () {
     function Bounds(width, height) {
         this.width = width;
@@ -106,7 +107,7 @@ var Entity = (function () {
             return;
         }
         else {
-            this.location = new Loc(this.location.x + Math.floor(Math.random() * 21) - 10, this.location.y + Math.floor(Math.random() * 21) - 10);
+            this.location = new Loc(this.location.x + Math.floor(Math.random() * (SINGLE_BLOCK_MOVEMENT * 2 + 1)) - SINGLE_BLOCK_MOVEMENT, this.location.y + Math.floor(Math.random() * (SINGLE_BLOCK_MOVEMENT * 2 + 1)) - SINGLE_BLOCK_MOVEMENT);
             this.render();
         }
     };

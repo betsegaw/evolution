@@ -35,6 +35,7 @@ function testTimer() {
 const CANVAS_WIDTH = 1000;
 const CANVAS_HEIGHT = 1000;
 const STABLE_POPULATION_BLOCK_COUNT = 400;
+const SINGLE_BLOCK_MOVEMENT = 50;
 
 interface ComparisonResult {
 	intersection: Block[];
@@ -125,7 +126,7 @@ class Entity implements TimeListeners, SelfRendering {
 			return;
 		}
 		else {
-			this.location = new Loc(this.location.x + Math.floor(Math.random() * 21) - 10, this.location.y + Math.floor(Math.random() * 21) - 10);
+			this.location = new Loc(this.location.x + Math.floor(Math.random() * (SINGLE_BLOCK_MOVEMENT *2 + 1)) - SINGLE_BLOCK_MOVEMENT, this.location.y + Math.floor(Math.random() * (SINGLE_BLOCK_MOVEMENT *2 + 1)) - SINGLE_BLOCK_MOVEMENT);
 
 			this.render();
 		}
