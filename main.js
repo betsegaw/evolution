@@ -27,7 +27,7 @@ function testTimer() {
 var CANVAS_WIDTH = 1000;
 var CANVAS_HEIGHT = 1000;
 var STABLE_POPULATION_BLOCK_COUNT = 400;
-var SINGLE_BLOCK_MOVEMENT = 50;
+var SINGLE_BLOCK_MOVEMENT = 100;
 var Bounds = (function () {
     function Bounds(width, height) {
         this.width = width;
@@ -122,7 +122,7 @@ var Entity = (function () {
         else {
             totalBlocksCount = 0;
         }
-        return 100 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01;
+        return 100 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01 + Math.pow(2, STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount);
     };
     Entity.getEntityComparison = function (entity1, entity2) {
         entity1.recenter();

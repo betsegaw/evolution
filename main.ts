@@ -35,7 +35,7 @@ function testTimer() {
 const CANVAS_WIDTH = 1000;
 const CANVAS_HEIGHT = 1000;
 const STABLE_POPULATION_BLOCK_COUNT = 400;
-const SINGLE_BLOCK_MOVEMENT = 50;
+const SINGLE_BLOCK_MOVEMENT = 100;
 
 interface ComparisonResult {
 	intersection: Block[];
@@ -158,7 +158,7 @@ class Entity implements TimeListeners, SelfRendering {
 			totalBlocksCount = 0;
 		}
 		
-		return 100 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01; 
+		return 100 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01 + Math.pow(2,STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount); 
 	}
 
 	static getEntityComparison(entity1: Entity, entity2: Entity): ComparisonResult {
