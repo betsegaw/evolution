@@ -115,7 +115,7 @@ var Entity = (function () {
         var totalBlocksCount = Enumerable.From(Universe.entities).Where(function (x) { return x.alive; }).Select(function (x) { return x.blocks.length; }).Aggregate(function (x, y) {
             return x + y;
         });
-        return 30 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01;
+        return 100 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01;
     };
     Entity.getEntityComparison = function (entity1, entity2) {
         entity1.recenter();

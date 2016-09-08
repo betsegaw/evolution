@@ -149,7 +149,7 @@ class Entity implements TimeListeners, SelfRendering {
 			return x + y; 
 		});
 
-		return 30 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01; 
+		return 100 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01; 
 	}
 
 	static getEntityComparison(entity1: Entity, entity2: Entity): ComparisonResult {
