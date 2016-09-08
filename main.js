@@ -107,7 +107,7 @@ var Entity = (function () {
             return;
         }
         else {
-            this.location = new Loc(this.location.x + Math.floor(Math.random() * (SINGLE_BLOCK_MOVEMENT * 2 + 1)) - SINGLE_BLOCK_MOVEMENT, this.location.y + Math.floor(Math.random() * (SINGLE_BLOCK_MOVEMENT * 2 + 1)) - SINGLE_BLOCK_MOVEMENT);
+            this.location = new Loc((this.location.x + Math.floor(Math.random() * (SINGLE_BLOCK_MOVEMENT * 2 + 1)) - SINGLE_BLOCK_MOVEMENT) % CANVAS_WIDTH, (this.location.y + Math.floor(Math.random() * (SINGLE_BLOCK_MOVEMENT * 2 + 1)) - SINGLE_BLOCK_MOVEMENT) % CANVAS_HEIGHT);
             this.render();
         }
     };
