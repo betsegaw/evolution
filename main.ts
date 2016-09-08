@@ -144,10 +144,19 @@ class Entity implements TimeListeners, SelfRendering {
 	}
 
 	static getSingleBlockLifeExpectancy(): number {
-		var totalBlocksCount: number = Enumerable.From(Universe.entities).Where(function(x) { return x.alive }).Select(function(x) { return x.blocks.length } ).Aggregate(function(x, y) { 
-			return x + y; 
-		});
+		var totalBlocksCount: number;
 
+		var livingEntities = Enumerable.From(Universe.entities).Where(function(x) { return x.alive });
+
+		if (livingEntities.Count() > 0) {
+			totalBlocksCount = livingEntities.Select(function(x) { return x.blocks.length } ).Aggregate(function(x, y) { 
+				return x + y; 
+			});
+		}
+		else {
+			totalBlocksCount = 0;
+		}
+		
 		return 100 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01; 
 	}
 
@@ -284,7 +293,7 @@ class TimeKeeper {
 	constructor() {
 		this.listeners = [];
 		this.counter = 0;
-		this.intervalID = window.setInterval(this.myCallback, 1000);
+		this.intervalID = window.setInterval(this.myCallback, 10);
 	}
 
 	myCallback = () => {

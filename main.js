@@ -111,9 +111,16 @@ var Entity = (function () {
         }
     };
     Entity.getSingleBlockLifeExpectancy = function () {
-        var totalBlocksCount = Enumerable.From(Universe.entities).Where(function (x) { return x.alive; }).Select(function (x) { return x.blocks.length; }).Aggregate(function (x, y) {
-            return x + y;
-        });
+        var totalBlocksCount;
+        var livingEntities = Enumerable.From(Universe.entities).Where(function (x) { return x.alive; });
+        if (livingEntities.Count() > 0) {
+            totalBlocksCount = livingEntities.Select(function (x) { return x.blocks.length; }).Aggregate(function (x, y) {
+                return x + y;
+            });
+        }
+        else {
+            totalBlocksCount = 0;
+        }
         return 100 + (STABLE_POPULATION_BLOCK_COUNT - totalBlocksCount) * 0.01;
     };
     Entity.getEntityComparison = function (entity1, entity2) {
@@ -228,7 +235,7 @@ var TimeKeeper = (function () {
         };
         this.listeners = [];
         this.counter = 0;
-        this.intervalID = window.setInterval(this.myCallback, 1000);
+        this.intervalID = window.setInterval(this.myCallback, 10);
     }
     return TimeKeeper;
 }());
