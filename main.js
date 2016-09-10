@@ -28,6 +28,7 @@ var CANVAS_WIDTH = 1000;
 var CANVAS_HEIGHT = 1000;
 var STABLE_POPULATION_BLOCK_COUNT = 400;
 var SINGLE_BLOCK_MOVEMENT = 100;
+var COLOR_MUTATION = 255;
 var Bounds = (function () {
     function Bounds(width, height) {
         this.width = width;
@@ -64,7 +65,7 @@ var Entity = (function () {
                 Enumerable.From(_this.blocks).ForEach(function (b) {
                     if (Universe.readyForRender()) {
                         var rectangle = new createjs.Shape();
-                        rectangle.graphics.beginFill("DeepSkyBlue").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getFullBlockSize(), Block.getFullBlockSize());
+                        rectangle.graphics.beginFill("rgba(" + _this.color[0] + "," + _this.color[1] + "," + _this.color[2] + ",1)").drawRect(b.location.x - Block.getHalfBlockSize() + _this.location.x, b.location.y - Block.getHalfBlockSize() + _this.location.y, Block.getFullBlockSize(), Block.getFullBlockSize());
                         Universe.renderingLayer.addChild(rectangle);
                     }
                 });
@@ -72,6 +73,7 @@ var Entity = (function () {
         };
         this.alive = true;
         this.age = 0;
+        this.color = [0, 0, 0];
     }
     Entity.prototype.addBlock = function (block) {
         this.blocks.push(block);
@@ -99,6 +101,9 @@ var Entity = (function () {
         var growthPossibilities = Enumerable.From([]);
         Enumerable.From(this.blocks).ForEach(function (x) { growthPossibilities = growthPossibilities.Union(Entity.getSurroundingBlocks(x)); });
         return growthPossibilities.Except(this.blocks, function (x) { return JSON.stringify(x); }).ToArray();
+    };
+    Entity.prototype.setColor = function (color) {
+        this.color = color;
     };
     Entity.prototype.stepForward = function (sequence) {
         this.age++;
@@ -135,11 +140,16 @@ var Entity = (function () {
         console.log("A child is born...!");
         var comparison = Entity.getEntityComparison(entity1, entity2);
         var newEntity = new Entity(comparison.intersection, new Loc(Math.floor(Math.random() * CANVAS_WIDTH), Math.floor(Math.random() * CANVAS_HEIGHT)));
+        newEntity.color = [(entity1.color[0] + entity2.color[0]) / 2, (entity1.color[1] + entity2.color[1]) / 2, (entity1.color[2] + entity2.color[2]) / 2];
         Enumerable.From(comparison.unique).Intersect(newEntity.getEntityPotentialGrowthBlocks(), function (x) { return JSON.stringify(x); }).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
             newEntity.addBlock(x); });
         Enumerable.From(newEntity.getEntityPotentialGrowthBlocks()).ForEach(function (x) { if (Math.floor(Math.random() * 2) == 1)
             newEntity.addBlock(x); });
         if (newEntity.blocks.length != 0) {
+            newEntity.setColor([
+                Math.abs(newEntity.color[0] + Math.floor(Math.random() * (COLOR_MUTATION * 2 + 1)) - COLOR_MUTATION) % 255,
+                Math.abs(newEntity.color[1] + Math.floor(Math.random() * (COLOR_MUTATION * 2 + 1)) - COLOR_MUTATION) % 255,
+                Math.abs(newEntity.color[2] + Math.floor(Math.random() * (COLOR_MUTATION * 2 + 1)) - COLOR_MUTATION) % 255]);
             return Entity.duplicateEntity(newEntity, 100);
         }
         else {
@@ -149,7 +159,9 @@ var Entity = (function () {
     Entity.duplicateEntity = function (entity, count) {
         var result = [];
         for (var i = 0; i < count; i++) {
-            result.push(new Entity(Enumerable.From(entity.blocks).Select(function (block) { return new Block(new Loc(block.location.x, block.location.y)); }).ToArray(), new Loc(0, 0)));
+            var latestEntity = new Entity(Enumerable.From(entity.blocks).Select(function (block) { return new Block(new Loc(block.location.x, block.location.y)); }).ToArray(), new Loc(0, 0));
+            latestEntity.color = entity.color;
+            result.push(latestEntity);
         }
         Entity.randomizeLocation(result, new Loc(0, 0), new Loc(CANVAS_WIDTH, CANVAS_HEIGHT));
         return result;
